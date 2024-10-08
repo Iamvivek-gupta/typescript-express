@@ -56,14 +56,14 @@ In `src/config/db.config.ts`:
 ```typescript
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-
 dotenv.config();
+
+const uri:any = process.env.MONGODB_URI;
+
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI!, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    await mongoose.connect(uri, {
     });
     console.log('MongoDB connected');
   } catch (error) {
@@ -239,11 +239,14 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../app';
 import User from '../models/user.model';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const uri:any = process.env.MONGODB_URI;
+
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGODB_URI!, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+  await mongoose.connect(uri, {
   });
 });
 
