@@ -100,12 +100,12 @@ export default User;
 
 In `src/routes/user.routes.ts`:
 ```typescript
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import User from '../models/user.model';
 
 const router = Router();
 
-router.post('/users', async (req, res) => {
+router.post('/users', async (req: Request, res: Response): Promise<any> => {
   try {
     const user = new User(req.body);
     await user.save();
@@ -115,7 +115,7 @@ router.post('/users', async (req, res) => {
   }
 });
 
-router.get('/users', async (req, res) => {
+router.get('/users', async (req: Request, res: Response): Promise<any> => {
   try {
     const users = await User.find();
     res.status(200).send(users);

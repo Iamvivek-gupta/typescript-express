@@ -1,21 +1,22 @@
 import { Router, Request, Response } from 'express';
-import NodeCache from 'node-cache';
+//import NodeCache from 'node-cache';
 import User from '../models/user.model';
 
 const router = Router();
-const imageCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
+//const imageCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
+const cache = new Map<string, string>();
 
-router.post('/users', async (req, res) => {
+router.post('/users', async (req: Request, res: Response): Promise<any> => {
   try {
     const user = new User(req.body);
     await user.save();
-    res.status(201).send(user);
+    return res.status(201).send(user);
   } catch (error) {
-    res.status(400).send(error);
+    return res.status(400).send(error);
   }
 });
 
-router.get('/users', async (req, res) => {
+router.get('/users', async (req: Request, res: Response): Promise<any> => {
   try {
     const users = await User.find();
     console.log(users)
@@ -25,7 +26,7 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.get('/users/:id', async (req, res) => {
+router.get('/users/:id', async (req: Request, res: Response): Promise<any> => {
   try{
     const userId = req.params.id;
     const user = await User.findById(userId);
@@ -39,31 +40,34 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
-router.post('/cache-image', async (req, res) =>  {
-  try{
+router.post('/cache-image', async (req: Request, res: Response): Promise<any> => {
+  try {
     const { imageUrl } = req.body;
-    if( !imageUrl ){
-      res.status(400).send({ message: 'Image URL is required' });
+    if (!imageUrl) {
+      return res.status(400).send({ message: 'Image URL is required' });
     }
+
+    // Cache the image URL with a dynamic key
+    const cacheKey = `imageCache|${imageUrl}`;
+    console.log(cacheKey);
 
     // Check if the image URL is already cached
-    const cachedUrl = imageCache.get(imageUrl);
+
+    const cachedUrl = cache.get(cacheKey);
     if (cachedUrl) {
-      console.log("from cache itself")
-      res.status(200).send({ imageUrl: cachedUrl });
+      console.log("from cache itself");
+      return res.status(200).send({ imageUrl: cachedUrl });
     }
 
-    // Cache the image URL
-    imageCache.set(imageUrl, imageUrl);
+    cache.set(cacheKey, imageUrl);
     console.log("without cache");
-    res.status(200).send({ imageUrl });
-  } catch(err){
-    res.status(500).send(err);
+    return res.status(200).send({ imageUrl });
+  } catch (err) {
+    return res.status(500).send(err);
   }
 });
 
-
-router.get('/users', async (req, res) => {
+router.get('/users', async (req: Request, res: Response): Promise<any> => {
   try {
     console.log(req.query.name);
     const users = await User.findOne({name: req.query.name});
