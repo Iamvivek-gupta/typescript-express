@@ -1,7 +1,9 @@
 import { Router, Request, Response } from 'express';
+import NodeCache from 'node-cache';
 import User from '../models/user.model';
 
 const router = Router();
+const imageCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
 
 router.post('/users', async (req, res) => {
   try {
@@ -23,7 +25,7 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.get('/users/:id', async (req:Request, res: Response) => {
+router.get('/users/:id', async (req, res) => {
   try{
     const userId = req.params.id;
     const user = await User.findById(userId);
@@ -34,6 +36,29 @@ router.get('/users/:id', async (req:Request, res: Response) => {
     res.status(200).send(user);
   } catch(error){
     res.status(500).send(error);
+  }
+});
+
+router.post('/cache-image', async (req, res) =>  {
+  try{
+    const { imageUrl } = req.body;
+    if( !imageUrl ){
+      res.status(400).send({ message: 'Image URL is required' });
+    }
+
+    // Check if the image URL is already cached
+    const cachedUrl = imageCache.get(imageUrl);
+    if (cachedUrl) {
+      console.log("from cache itself")
+      res.status(200).send({ imageUrl: cachedUrl });
+    }
+
+    // Cache the image URL
+    imageCache.set(imageUrl, imageUrl);
+    console.log("without cache");
+    res.status(200).send({ imageUrl });
+  } catch(err){
+    res.status(500).send(err);
   }
 });
 
